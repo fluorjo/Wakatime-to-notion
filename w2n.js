@@ -31,35 +31,37 @@ const wakaURL = `https://wakatime.com/api/v1/users/current/summaries?start=${sta
 //-------------//
 const notion = new Client({ auth: process.env.NOTION_KEY });
 const databaseId = "8e70205e92e747b6b16d47583c4bd62f";
+const dayDB_ID = "0d71ede4962f4af28440bf5bd896ff08";
 
 async function main() {
   request(wakaURL, async function (err, res, body) {
     const jsonBody = JSON.parse(body);
     // console.log(jsonBody);
-    for (let project in jsonBody.data[0].projects) {
-      const projectName = jsonBody.data[0].projects[project].name;
-      const time = jsonBody.data[0].projects[project].digital;
-      const time2String = time.toString();
-      console.log(projectName);
-      try {
+    const day_cumulative_total=jsonBody.cumulative_total.digital
+    const startDayNTime=jsonBody.start
+    const startDay=startDayNTime.substr(0,10)
+    console.log(startDay);
+    // ---------------------날짜별 ----------------------//
+
+    try {
         const response = await notion.pages.create({
-          parent: { database_id: databaseId },
+          parent: { database_id: dayDB_ID },
           properties: {
-            Title: {
+            title: {
               title: [
                 {
                   text: {
-                    content: projectName,
+                    content: startDay,
                   },
                 },
               ],
             },
-
-            time: {
-                rich_text: [
+    
+            total_time: {
+              rich_text: [
                 {
                   text: {
-                    content: time2String,
+                    content: day_cumulative_total,
                   },
                 },
               ],
@@ -71,7 +73,44 @@ async function main() {
       } catch (error) {
         console.error(error.body);
       }
+
+    // 활동별 ---------------------------
+    for (let project in jsonBody.data[0].projects) {
+      const projectName = jsonBody.data[0].projects[project].name;
+      const time = jsonBody.data[0].projects[project].digital;
+        console.log(projectName);
+        try {
+          const response = await notion.pages.create({
+            parent: { database_id: databaseId },
+            properties: {
+              Project: {
+                title: [
+                  {
+                    text: {
+                      content: projectName,
+                    },
+                  },
+                ],
+              },
+
+              Time: {
+                rich_text: [
+                  {
+                    text: {
+                      content: time,
+                    },
+                  },
+                ],
+              },
+            },
+          });
+          // console.log(response)
+          // console.log("Success! Entry added.")
+        } catch (error) {
+          console.error(error.body);
+        }
     }
-  });
+});
+
 }
 main();
