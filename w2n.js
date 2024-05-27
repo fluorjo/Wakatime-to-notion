@@ -37,34 +37,76 @@ async function main() {
   request(wakaURL, async function (err, res, body) {
     const jsonBody = JSON.parse(body);
     // console.log(jsonBody);
-    const day_cumulative_total=jsonBody.cumulative_total.digital
-    const startDayNTime=jsonBody.start
-    const startDay=startDayNTime.substr(0,10)
+    const day_cumulative_total = jsonBody.cumulative_total.digital;
+    const startDayNTime = jsonBody.start;
+    // const startDay=startDayNTime.replaceAll('-','. ').substr(0,12)+'.'
+    const startDay = startDayNTime.substr(0, 10);
     console.log(startDay);
     // ---------------------날짜별 ----------------------//
 
     try {
+      const response = await notion.pages.create({
+        parent: { database_id: dayDB_ID },
+        properties: {
+          title: {
+            title: [
+              {
+                text: {
+                  content: startDay,
+                },
+              },
+            ],
+          },
+
+          total_time: {
+            rich_text: [
+              {
+                text: {
+                  content: day_cumulative_total,
+                },
+              },
+            ],
+          },
+        },
+      });
+      // console.log(response)
+      // console.log("Success! Entry added.")
+    } catch (error) {
+      console.error(error.body);
+    }
+
+    // 활동별 ---------------------------
+    for (let project in jsonBody.data[0].projects) {
+      const projectName = jsonBody.data[0].projects[project].name;
+      const time = jsonBody.data[0].projects[project].digital;
+      console.log(projectName);
+      try {
         const response = await notion.pages.create({
-          parent: { database_id: dayDB_ID },
+          parent: { database_id: databaseId },
           properties: {
-            title: {
+            Project: {
               title: [
                 {
                   text: {
-                    content: startDay,
+                    content: projectName,
                   },
                 },
               ],
             },
-    
-            total_time: {
+
+            Time: {
               rich_text: [
                 {
                   text: {
-                    content: day_cumulative_total,
+                    content: time,
                   },
                 },
               ],
+            },
+            Date: {
+              date: {
+                start: startDay,
+              },
             },
           },
         });
@@ -73,44 +115,7 @@ async function main() {
       } catch (error) {
         console.error(error.body);
       }
-
-    // 활동별 ---------------------------
-    for (let project in jsonBody.data[0].projects) {
-      const projectName = jsonBody.data[0].projects[project].name;
-      const time = jsonBody.data[0].projects[project].digital;
-        console.log(projectName);
-        try {
-          const response = await notion.pages.create({
-            parent: { database_id: databaseId },
-            properties: {
-              Project: {
-                title: [
-                  {
-                    text: {
-                      content: projectName,
-                    },
-                  },
-                ],
-              },
-
-              Time: {
-                rich_text: [
-                  {
-                    text: {
-                      content: time,
-                    },
-                  },
-                ],
-              },
-            },
-          });
-          // console.log(response)
-          // console.log("Success! Entry added.")
-        } catch (error) {
-          console.error(error.body);
-        }
     }
-});
-
+  });
 }
 main();
