@@ -14,7 +14,7 @@ const weekNumber = () => {
 const getMonday = (d) => {
   d = new Date(d);
   var day = d.getDay(),
-    diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+    diff = d.getDate() - day + (day == 0 ? -6 : 1); 
   return new Date(d.setDate(diff));
 };
 
@@ -31,6 +31,7 @@ const wakaURL = `https://wakatime.com/api/v1/users/current/summaries?start=${sta
 //-------------//
 const notion = new Client({ auth: process.env.NOTION_KEY });
 const day_db= process.env.DAY_DB_ID;
+console.log(day_db);
 const project_db= process.env.PROJECT_DB_ID;
 
 async function main() {
