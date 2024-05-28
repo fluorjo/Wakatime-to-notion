@@ -1,43 +1,113 @@
 import { Client } from "@notionhq/client";
 import dotenv from "dotenv";
-import { getDatesStartToLast } from "./date.js";
+import request from "request";
 dotenv.config();
 
-const notion = new Client({ auth: process.env.NOTION_KEY });
-const databaseId = "8e70205e92e747b6b16d47583c4bd62f";
-const dateList = getDatesStartToLast("2024-05-26", "2024-06-30");
+const wakatimeApiKey = process.env.WAKATIME_API_KEY;
+const weekNumber = () => {
+  currentdate = new Date();
+  var oneJan = new Date(currentdate.getFullYear(), 0, 1);
+  var numberOfDays = Math.floor((currentdate - oneJan) / (24 * 60 * 60 * 1000));
+  return Math.ceil((currentdate.getDay() + 1 + numberOfDays) / 7);
+};
 
-async function addItem() {
-  dateList.forEach(async (element) => {
+const getMonday = (d) => {
+  d = new Date(d);
+  var day = d.getDay(),
+    diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+  return new Date(d.setDate(diff));
+};
+
+const today = new Date();
+const monday = getMonday(today);
+
+const todayString = today.toISOString();
+const mondayString = monday.toISOString();
+
+const startDate = mondayString.split("T");
+const endDate = todayString.split("T");
+
+const wakaURL = `https://wakatime.com/api/v1/users/current/summaries?start=${startDate[0]}&end=${endDate[0]}&api_key=${wakatimeApiKey}`;
+//-------------//
+const notion = new Client({ auth: process.env.NOTION_KEY });
+const day_db= process.env.DAY_DB_ID;
+const project_db= process.env.PROJECT_DB_ID;
+
+async function main() {
+  request(wakaURL, async function (err, res, body) {
+    const jsonBody = JSON.parse(body);
+    const day_cumulative_total = jsonBody.cumulative_total.digital;
+    const startDayNTime = jsonBody.start;
+    const startDay = startDayNTime.substr(0, 10);
+    // ---------------------날짜별 ----------------------//
     try {
       const response = await notion.pages.create({
-        parent: { database_id: databaseId },
+        parent: { database_id: day_db },
         properties: {
-          Title: {
+          title: {
             title: [
               {
                 text: {
-                  content: element,
+                  content: startDay,
                 },
               },
             ],
           },
-          // "Today User": {
-          //     number: 100,
-          // },
-          Date: {
-            date: {
-              start: element,
-            },
+
+          total_time: {
+            rich_text: [
+              {
+                text: {
+                  content: day_cumulative_total,
+                },
+              },
+            ],
           },
         },
       });
-      // console.log(response)
-      // console.log("Success! Entry added.")
     } catch (error) {
       console.error(error.body);
     }
+
+    // 활동별 ---------------------------
+    for (let project in jsonBody.data[0].projects) {
+      const projectName = jsonBody.data[0].projects[project].name;
+      const time = jsonBody.data[0].projects[project].digital;
+      try {
+        const response = await notion.pages.create({
+          parent: { database_id: project_db},
+          properties: {
+            Project: {
+              title: [
+                {
+                  text: {
+                    content: projectName,
+                  },
+                },
+              ],
+            },
+
+            Time: {
+              rich_text: [
+                {
+                  text: {
+                    content: time,
+                  },
+                },
+              ],
+            },
+            Date: {
+              date: {
+                start: startDay,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error(error.body);
+      }
+    }
+    // 기준
   });
 }
-
-addItem();
+main();
