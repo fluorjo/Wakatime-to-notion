@@ -20,8 +20,8 @@ jobs:
         with:
           node-version: 14.13.0
 
-      # - name: Clean Install NPM Dependencies
-      #   run: npm ci
+      - name: Clean Install NPM Dependencies
+        run: npm ci
 
       - name: Run the Bot
         run: node index.js

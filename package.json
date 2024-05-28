@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@notionhq/client": "^1.0.1",
+    "@notionhq/client": "^2.2.15",
     "dotenv": "^16.4.5",
     "github-calendar": "^2.3.4",
     "request": "^2.88.2"
