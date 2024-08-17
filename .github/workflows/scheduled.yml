@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "59 01 * * *"
+    - cron: "10 02 * * *"
     # - cron: "0 15 * * *"
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node Environment
         uses: actions/setup-node@v1
         with:
-          node-version: 14.13.0
+          node-version: 20.9.0
 
       - name: Clean Install NPM Dependencies
         run: npm i
