@@ -4,9 +4,9 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "20 02 * * *"
-    - cron: "5 * * * *"
-    # - cron: "0 15 * * *"
+    - cron: "05 04 * * *"
+    - cron: "0 0 15 * *"
+    - cron: "0 0/15 * * *"
 
 jobs:
   run_weather_bot:

@@ -77,45 +77,45 @@ async function main() {
       console.error(error.body);
     }
 
-    // // 활동별 ---------------------------
-    // for (let project in jsonBody.data[0].projects) {
-    //   const projectName = jsonBody.data[0].projects[project].name;
-    //   const time = jsonBody.data[0].projects[project].digital;
-    //   try {
-    //     const response = await notion.pages.create({
-    //       parent: { database_id: project_db},
-    //       properties: {
-    //         Project: {
-    //           title: [
-    //             {
-    //               text: {
-    //                 content: projectName,
-    //               },
-    //             },
-    //           ],
-    //         },
+    // 활동별 ---------------------------
+    for (let project in jsonBody.data[0].projects) {
+      const projectName = jsonBody.data[0].projects[project].name;
+      const time = jsonBody.data[0].projects[project].digital;
+      try {
+        const response = await notion.pages.create({
+          parent: { database_id: project_db},
+          properties: {
+            Project: {
+              title: [
+                {
+                  text: { 
+                    content: projectName,
+                  },
+                },
+              ],
+            },
 
-    //         Time: {
-    //           rich_text: [
-    //             {
-    //               text: {
-    //                 content: time,
-    //               },
-    //             },
-    //           ],
-    //         },
-    //         Date: {
-    //           date: {
-    //             start: startDay,
-    //           },
-    //         },
-    //       },
-    //     });
-    //   } catch (error) {
-    //     console.error(error.body);
-    //   }
-    // }
-    // // 기준
+            Time: {
+              rich_text: [
+                {
+                  text: {
+                    content: time,
+                  },
+                },
+              ],
+            },
+            Date: {
+              date: {
+                start: endDay,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error(error.body);
+      }
+    }
+    // 기준
   });
 }
 main();
