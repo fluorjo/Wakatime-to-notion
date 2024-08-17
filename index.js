@@ -24,14 +24,17 @@ const monday = getMonday(today);
 const todayString = today.toISOString();
 const mondayString = monday.toISOString();
 
-const startDate = mondayString.split("T");
-const endDate = todayString.split("T");
+const startDate = mondayString.split("T")[0];
+const endDate = todayString.split("T")[0];
 
-const wakaURL = `https://wakatime.com/api/v1/users/current/summaries?start=${startDate[0]}&end=${endDate[0]}&api_key=${wakatimeApiKey}`;
+// const wakaURL = `https://wakatime.com/api/v1/users/current/summaries?start=${startDate}&end=${endDate}&api_key=${wakatimeApiKey}`;
+const wakaURL = `https://wakatime.com/api/v1/users/current/summaries?start=${endDate}&end=${endDate}&api_key=${wakatimeApiKey}`;
+
 //-------------//
 const notion = new Client({ auth: process.env.NOTION_KEY });
 const day_db= process.env.DAY_DB_ID;
-console.log(day_db);
+// console.log(startDate);
+// console.log(endDate);
 const project_db= process.env.PROJECT_DB_ID;
 
 async function main() {
@@ -40,6 +43,10 @@ async function main() {
     const day_cumulative_total = jsonBody.cumulative_total.digital;
     const startDayNTime = jsonBody.start;
     const startDay = startDayNTime.substr(0, 10);
+    const endDayNTime = jsonBody.end;
+    const endDay = endDayNTime.substr(0, 10);
+    console.log(endDay)
+    // console.log(jsonBody.data[0])
     // ---------------------날짜별 ----------------------//
     try {
       const response = await notion.pages.create({
@@ -49,7 +56,7 @@ async function main() {
             title: [
               {
                 text: {
-                  content: startDay,
+                  content: endDay,
                 },
               },
             ],
@@ -70,45 +77,45 @@ async function main() {
       console.error(error.body);
     }
 
-    // 활동별 ---------------------------
-    for (let project in jsonBody.data[0].projects) {
-      const projectName = jsonBody.data[0].projects[project].name;
-      const time = jsonBody.data[0].projects[project].digital;
-      try {
-        const response = await notion.pages.create({
-          parent: { database_id: project_db},
-          properties: {
-            Project: {
-              title: [
-                {
-                  text: {
-                    content: projectName,
-                  },
-                },
-              ],
-            },
+    // // 활동별 ---------------------------
+    // for (let project in jsonBody.data[0].projects) {
+    //   const projectName = jsonBody.data[0].projects[project].name;
+    //   const time = jsonBody.data[0].projects[project].digital;
+    //   try {
+    //     const response = await notion.pages.create({
+    //       parent: { database_id: project_db},
+    //       properties: {
+    //         Project: {
+    //           title: [
+    //             {
+    //               text: {
+    //                 content: projectName,
+    //               },
+    //             },
+    //           ],
+    //         },
 
-            Time: {
-              rich_text: [
-                {
-                  text: {
-                    content: time,
-                  },
-                },
-              ],
-            },
-            Date: {
-              date: {
-                start: startDay,
-              },
-            },
-          },
-        });
-      } catch (error) {
-        console.error(error.body);
-      }
-    }
-    // 기준
+    //         Time: {
+    //           rich_text: [
+    //             {
+    //               text: {
+    //                 content: time,
+    //               },
+    //             },
+    //           ],
+    //         },
+    //         Date: {
+    //           date: {
+    //             start: startDay,
+    //           },
+    //         },
+    //       },
+    //     });
+    //   } catch (error) {
+    //     console.error(error.body);
+    //   }
+    // }
+    // // 기준
   });
 }
 main();

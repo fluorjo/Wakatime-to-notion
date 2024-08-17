@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 15 * * *" 
-    # - cron: '*/10 * * * *'
+    - cron: "59 01 * * *"
+    # - cron: "0 15 * * *"
 
 jobs:
   run_weather_bot:
@@ -31,4 +31,3 @@ jobs:
           NOTION_KEY: ${{ secrets.NOTION_KEY}}
           DAY_DB_ID: ${{ secrets.DAY_DB_ID}}
           PROJECT_DB_ID: ${{ secrets.PROJECT_DB_ID}}
-
